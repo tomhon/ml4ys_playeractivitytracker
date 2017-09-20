@@ -179,8 +179,8 @@ function initializeGameData(session) {
 
 // Create chat connector for communicating with the Bot Framework Service
 var connector = new builder.ChatConnector({
-    appId: process.env.MICROSOFT_APP_ID || "644048c6-8d61-4d63-8810-3832d34862e1",
-    appPassword: process.env.MICROSOFT_APP_PASSWORD || "VQykmSeONQUD5JNeEccejWU"
+    appId: process.env.MICROSOFT_APP_ID || "4c2d5e91-5090-4914-9435-575374491805",
+    appPassword: process.env.MICROSOFT_APP_PASSWORD || "gU2DhLRuJQOgFsK2swiasnR"
 });
 
 // Listen for messages from users 
