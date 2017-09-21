@@ -21,6 +21,42 @@ server.listen(process.env.port || process.env.PORT || 3978, function () {
    console.log('%s listening to %s', server.name, server.url); 
 });
 
+// Setup IOT Hub connection
+var connectionString = 'HostName=iothubsoccercoach.azure-devices.net;DeviceId=mobile1;SharedAccessKey=nLSuFkJOj3dtkEgwJbjEpQe0i28ws7Z/lLWbb2d9dt8=' ;
+// use factory function from AMQP-specific package
+var clientFromConnectionString = require('azure-iot-device-http').clientFromConnectionString;
+// AMQP-specific factory function returns Client object from core package
+var iotClient = clientFromConnectionString(connectionString);
+// use Message object from core package
+var Message = require('azure-iot-device').Message;
+
+
+
+//library to call Azure IOT Hub
+
+function logToIOTHub (session) {
+
+var connectCallback = function (err) {
+  if (err) {
+    console.error('Could not connect: ' + err);
+  } else {    console.log('Client connected');
+    var userDataString = JSON.stringify(session.userData);
+    var msg = new Message(userDataString);
+    iotClient.sendEvent(msg, function (err) {
+      if (err) {
+        console.log('Error sending to IOT hub' + err.toString());
+      } else {
+        console.log('Message sent to IOT hub');
+      };
+    });
+  };
+};
+
+
+iotClient.open(connectCallback);
+
+}
+
 /**
  * Get the database by ID, or create if it doesn't exist.
  * @param {string} database - The database to get or create
@@ -129,8 +165,10 @@ function logResponse (session, player, status) {
         // // oLogData.conversationData = session.userData;
         var date = new Date();
         session.userData.id = date.toISOString();
+        session.userData.iotMessageType = "Tracking";
         session.userData.status = status;
         session.userData.user = session.message.user.name;
+        logToIOTHub(session);
         console.log('attempting write to docdb');
         getDBDocument(session.userData)
             .then(()  =>   console.log(session.userData))
@@ -165,8 +203,9 @@ function initializePlayerTrackingData(session) {
 };
 
 function initializeGameData(session) {
+
     var date = new Date();
-    session.userData.gameId = date,
+    session.userData.gameId = date;
     console.log('Game Id set >>>>' + session.userData.gameId);
     session.userData.matchState = 'Pre-Game';
     console.log('Match State Changed >>>>' + session.userData.matchState);
